@@ -1020,7 +1020,17 @@ function loadHome() {
   document.getElementById('sDeneme').textContent = denemeler.length;
 
   let toplam = 0;
+  // Tamamlanan konular
   Object.keys(localStorage).forEach(k => { if(k.startsWith('po_konu_')) toplam++; });
+  // Tamamlanan plan görevleri
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith('po_week_')) {
+      try {
+        const wd = JSON.parse(localStorage.getItem(k));
+        if (wd && wd.tasks) wd.tasks.forEach(t => { if (t.done) toplam++; });
+      } catch(e) {}
+    }
+  });
   document.getElementById('sToplam').textContent = toplam;
 
   let rozet = 0;
@@ -1072,7 +1082,7 @@ function loadPlan() {
             <input class="task-input" value="${task.text||''}" placeholder="Görev ${ti+1}..."
               onchange="saveTask('${dKey}',${ti},this.value)">
             <button class="task-check${task.done?' done':''}" onclick="toggleTask('${dKey}',${ti})">
-              ${task.done ? '✓' : ''}
+              ${task.done ? '✓' : '<span style=\"font-size:0.6rem;font-weight:700;color:var(--gray)\">Tamam</span>'}
             </button>
           </div>
         `).join('')}
@@ -1102,6 +1112,7 @@ function toggleTask(dKey, ti) {
   wd.tasks[ti].done = !wd.tasks[ti].done;
   DATA.set('week_'+dKey, wd);
   loadPlan();
+  loadHome();
   showToast(wd.tasks[ti].done ? '✅ Tamamlandı!' : '↩️ Geri alındı');
 }
 
