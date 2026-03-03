@@ -7,7 +7,1692 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0c1a2e">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable"<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0c1a2e">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pusulam Ortaokul">
+<link rel="manifest" id="pwaManifest">
+<title>Pusulam Ortaokul</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #0ea5e9;
+    --gold: #38bdf8;
+    --dark: #0c1a2e;
+    --cream: #f0f7ff;
+    --light-orange: #e0f2fe;
+    --text: #0f2744;
+    --gray: #6b8aaa;
+    --border: #d0e4f5;
+    --green: #10b981;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--cream); color:var(--text); max-width:480px; margin:0 auto; position:relative; min-height:100vh; }
+
+  /* ── SPLASH ── */
+  #splash { position:fixed; inset:0; background:var(--dark); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+  .splash-logo { font-size:4rem; animation:pulse 2s infinite ease-in-out; }
+  .splash-title { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:900; color:white; }
+  .splash-title span { color:var(--orange); }
+  .splash-sub { font-size:0.9rem; color:rgba(255,255,255,0.5); }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── NAV ── */
+  .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:white; border-top:1.5px solid var(--border); display:flex; height:60px; z-index:100; }
+  .nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:none; background:none; cursor:pointer; color:var(--gray); font-family:'Nunito',sans-serif; font-size:0.6rem; font-weight:700; }
+  .nav-btn .icon { font-size:1.3rem; line-height:1; }
+  .nav-btn.active { color:var(--orange); }
+
+  /* ── PAGE ── */
+  .page { display:none; padding:20px 16px 90px; min-height:calc(100vh - 60px); animation:fadeUp 0.3s ease; }
+  .page.active { display:block; }
+
+  /* ── CARD ── */
+  .card { background:white; border-radius:20px; padding:16px; margin-bottom:14px; box-shadow:0 2px 12px rgba(0,0,0,0.05); border:1.5px solid var(--border); }
+
+  /* ── TOAST ── */
+  .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--dark); color:white; padding:10px 20px; border-radius:50px; font-size:0.85rem; font-weight:700; opacity:0; transition:all 0.3s; pointer-events:none; z-index:500; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .plan-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:600; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+  .plan-modal-overlay.show { opacity:1; pointer-events:all; }
+  .plan-modal { background:white; border-radius:20px 20px 0 0; width:100%; max-width:480px; padding:20px 16px 32px; transform:translateY(40px); transition:transform 0.25s; }
+  .plan-modal-overlay.show .plan-modal { transform:translateY(0); }
+  .plan-modal-title { font-size:0.85rem; font-weight:800; color:var(--dark); margin-bottom:4px; }
+  .plan-modal-konu { font-size:0.78rem; color:var(--gray); margin-bottom:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .plan-week-label { font-size:0.72rem; font-weight:700; color:var(--purple); text-transform:uppercase; letter-spacing:0.5px; margin:12px 0 6px; }
+  .plan-days-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:4px; }
+  .plan-day-btn { border:1.5px solid var(--border); background:white; border-radius:10px; padding:6px 2px; font-size:0.7rem; font-weight:700; cursor:pointer; text-align:center; transition:all 0.18s; line-height:1.4; color:var(--dark); }
+  .plan-day-btn:hover { border-color:var(--purple); color:var(--purple); background:#f3f0ff; }
+  .plan-day-btn.today { border-color:var(--purple); background:var(--purple); color:white; }
+  .plan-day-btn.has-task { background:#f0faf4; border-color:var(--green); color:var(--green); }
+  .plan-day-btn.disabled { opacity:0.35; cursor:default; }
+  .plan-modal-cancel { margin-top:14px; width:100%; padding:11px; border:none; border-radius:12px; background:var(--light); color:var(--gray); font-size:0.85rem; font-weight:700; cursor:pointer; font-family:'Nunito',sans-serif; }
+
+  /* ── SECTION TITLE ── */
+  .section-title { display:flex; align-items:center; gap:8px; font-weight:800; font-size:0.95rem; color:var(--text); margin-bottom:10px; }
+  .section-title::before { content:''; display:block; width:4px; height:16px; background:var(--orange); border-radius:2px; }
+
+  /* ── BUTONLAR ── */
+  .btn { padding:12px 20px; border-radius:14px; border:none; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.9rem; cursor:pointer; transition:all 0.2s; }
+  .btn-primary { background:var(--orange); color:white; width:100%; }
+  .btn-primary:active { transform:scale(0.97); }
+  .btn-outline { background:white; color:var(--orange); border:2px solid var(--orange); }
+
+  /* ── INPUT ── */
+  .form-group { margin-bottom:12px; }
+  .form-group label { font-size:0.8rem; font-weight:800; color:var(--gray); display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 14px; border:2px solid var(--border); border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.9rem; background:white; outline:none; color:var(--text); }
+  .form-group input:focus, .form-group select:focus { border-color:var(--orange); }
+
+  /* ── SINIF BUTONLARI ── */
+  .sinif-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+  .sinif-btn { padding:10px 6px; border-radius:12px; border:2px solid var(--border); background:white; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.82rem; cursor:pointer; text-align:center; transition:all 0.2s; color:var(--gray); }
+  .sinif-btn.active { background:var(--orange); border-color:var(--orange); color:white; }
+
+  /* ── DERS RENKLERİ ── */
+  .ders-turkce { --ders-color: #e11d48; }
+  .ders-matematik { --ders-color: #2563eb; }
+  .ders-fen { --ders-color: #16a34a; }
+  .ders-sosyal { --ders-color: #d97706; }
+  .ders-inkilap { --ders-color: #7c3aed; }
+  .ders-ingilizce { --ders-color: #0891b2; }
+  .ders-din { --ders-color: #059669; }
+
+  /* ── HAFTALIK PLAN ── */
+  .week-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .week-nav-btn { width:32px; height:32px; border-radius:50%; border:2px solid var(--border); background:white; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:800; }
+  .week-label { font-weight:800; font-size:0.9rem; color:var(--text); }
+  .day-card { background:white; border-radius:14px; border:1.5px solid var(--border); margin-bottom:8px; overflow:hidden; }
+  .day-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--light-orange); cursor:pointer; }
+  .day-name { font-weight:800; font-size:0.85rem; color:var(--orange); }
+  .day-date { font-size:0.75rem; color:var(--gray); }
+  .day-body { padding:10px 14px; }
+  .task-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .task-input { flex:1; padding:8px 12px; border:1.5px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:0.82rem; }
+  .task-check { width:28px; height:28px; border-radius:8px; border:2px solid var(--border); background:white; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.9rem; transition:all 0.2s; }
+  .task-check.done { background:var(--green); border-color:var(--green); }
+  .task-row.completed .task-input { text-decoration:line-through; color:var(--gray); }
+
+  /* ── DENEME ── */
+  .lgs-format { background:linear-gradient(135deg,var(--dark),#0a3060); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .oturum-title { font-size:0.8rem; font-weight:800; color:var(--orange); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+  .ders-net-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .ders-badge { width:80px; font-size:0.72rem; font-weight:800; padding:4px 8px; border-radius:8px; text-align:center; flex-shrink:0; }
+  .ders-input-group { display:flex; gap:6px; flex:1; }
+  .ders-input-group input { flex:1; min-width:0; padding:7px 4px; border-radius:8px; border:1.5px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.1); color:white; font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:700; text-align:center; outline:none; }
+  .ders-input-group input::placeholder { color:rgba(255,255,255,0.35); }
+  .net-label { font-size:0.65rem; color:rgba(255,255,255,0.5); text-align:center; font-weight:700; }
+
+  /* ── NET GRAFİK ── */
+  #netGrafik { width:100%; height:200px; }
+
+  /* ── KONU LİSTESİ ── */
+  .konu-ders-tab { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .konu-tab-btn { padding:6px 12px; border-radius:20px; border:2px solid var(--border); background:white; font-family:'Nunito',sans-serif; font-size:0.75rem; font-weight:800; cursor:pointer; color:var(--gray); transition:all 0.2s; }
+  .konu-tab-btn.active { border-color:var(--orange); background:var(--orange); color:white; }
+  .konu-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .konu-item:last-child { border-bottom:none; }
+  .konu-baslik { padding:10px 0 4px; margin-top:6px; font-size:0.78rem; font-weight:900; color:var(--orange); text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--orange); margin-bottom:2px; }
+  .konu-baslik:first-child { margin-top:0; }
+  .konu-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border); background:white; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; transition:all 0.2s; }
+  .konu-check.done { background:var(--green); border-color:var(--green); }
+  .konu-text { font-size:0.82rem; color:var(--text); flex:1; line-height:1.3; }
+  .konu-text.done { text-decoration:line-through; color:var(--gray); }
+  .konu-plan-btn { flex-shrink:0; background:none; border:1.5px solid var(--border); border-radius:8px; padding:3px 7px; font-size:0.7rem; color:var(--gray); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .konu-plan-btn:hover { background:var(--purple); border-color:var(--purple); color:white; }
+  .konu-plan-btn.eklendi { background:var(--green); border-color:var(--green); color:white; }
+  .konu-progress { background:var(--border); border-radius:20px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .konu-progress-fill { height:100%; background:linear-gradient(90deg,var(--orange),var(--gold)); border-radius:20px; transition:width 0.4s; }
+
+  /* ── PROFIL ── */
+  .profil-avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--orange),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 16px; }
+  .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px; }
+  .stat-card { background:white; border-radius:14px; border:1.5px solid var(--border); padding:12px 8px; text-align:center; }
+  .stat-val { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:900; color:var(--orange); }
+  .stat-lbl { font-size:0.65rem; color:var(--gray); font-weight:700; margin-top:2px; text-transform:uppercase; }
+
+  /* ── ROZET ── */
+  .rozet-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .rozet-item { text-align:center; }
+  .rozet-icon { font-size:2rem; display:block; margin-bottom:4px; filter:grayscale(1) opacity(0.3); transition:all 0.3s; }
+  .rozet-icon.earned { filter:none; }
+  .rozet-name { font-size:0.62rem; font-weight:700; color:var(--gray); }
+
+  /* ── UYKU TAKİBİ ── */
+  .uyku-bar-container { display:flex; align-items:flex-end; gap:5px; height:80px; }
+  .uyku-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:360px) { .sinif-grid { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">🧭</div>
+  <div class="splash-title">Pusula<span>m</span></div>
+  <div class="splash-sub">Liseye Hazırlık</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Plan Gün Seçim Modalı -->
+<div class="plan-modal-overlay" id="planModalOverlay" onclick="closePlanModal(event)">
+  <div class="plan-modal">
+    <div class="plan-modal-title">📅 Hangi güne ekleyelim?</div>
+    <div class="plan-modal-konu" id="planModalKonu"></div>
+    <div class="plan-week-label" id="planWeek1Label"></div>
+    <div class="plan-days-grid" id="planWeek1Days"></div>
+    <div class="plan-week-label" id="planWeek2Label"></div>
+    <div class="plan-days-grid" id="planWeek2Days"></div>
+    <button class="plan-modal-cancel" onclick="closePlanModal()">İptal</button>
+  </div>
+</div>
+
+<!-- ANA SAYFA -->
+<div class="page active" id="page-home">
+  <div style="background:linear-gradient(135deg,var(--dark),#0a3060);border-radius:24px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;font-size:6rem;opacity:0.07">🧭</div>
+    <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);font-weight:700;margin-bottom:4px" id="homeSelam">Merhaba 👋</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:white;margin-bottom:12px" id="homeAd">Pusulam</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap" id="homeSinifBadge"></div>
+    <!-- LGS Geri Sayım -->
+    <div style="margin-top:14px;background:rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:1.8rem">📅</div>
+      <div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);font-weight:800;text-transform:uppercase;letter-spacing:0.5px">LGS'ye</div>
+        <div id="lgsGeriSayim" style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--orange)">- gün</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- İstatistikler -->
+  <div class="stat-row" id="homeStats" style="display:none">
+    <div class="stat-card"><div class="stat-val" id="sToplam">0</div><div class="stat-lbl">Çalışılan</div></div>
+    <div class="stat-card"><div class="stat-val" id="sDeneme">0</div><div class="stat-lbl">Deneme</div></div>
+    <div class="stat-card"><div class="stat-val" id="sRozet">0</div><div class="stat-lbl">Rozet</div></div>
+  </div>
+
+  <!-- Günün Odağı -->
+  <div class="card">
+    <div class="section-title">🎯 Günün Odağı</div>
+    <input id="odakInput" style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.88rem;" placeholder="Bugün ne çalışacaksın?">
+    <button class="btn btn-primary" style="margin-top:10px;padding:10px" onclick="saveOdak()">💾 Kaydet</button>
+  </div>
+
+  <!-- Hızlı Erişim -->
+  <div class="section-title">⚡ Hızlı Erişim</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <button onclick="showPage('plan')" style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;text-align:left">
+      <div style="font-size:1.5rem;margin-bottom:6px">📅</div>
+      <div style="font-weight:800;font-size:0.82rem;color:var(--text)">Haftalık Plan</div>
+    </button>
+    <button onclick="showPage('deneme')" style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;text-align:left">
+      <div style="font-size:1.5rem;margin-bottom:6px">📊</div>
+      <div style="font-weight:800;font-size:0.82rem;color:var(--text)">Deneme Gir</div>
+    </button>
+    <button onclick="showPage('konu')" style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;text-align:left">
+      <div style="font-size:1.5rem;margin-bottom:6px">📚</div>
+      <div style="font-weight:800;font-size:0.82rem;color:var(--text)">Konu Takibi</div>
+    </button>
+    <button onclick="showPage('rozet')" style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;text-align:left">
+      <div style="font-size:1.5rem;margin-bottom:6px">🏅</div>
+      <div style="font-weight:800;font-size:0.82rem;color:var(--text)">Rozetler</div>
+    </button>
+  </div>
+
+  <!-- Motivasyon -->
+  <div class="card" style="background:linear-gradient(135deg,#061830,#0a3060);color:white">
+    <div id="motivasyon" style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.8);font-style:italic">"Bugün çalıştığın her konu, yarın sana yol gösterir. 🧭"</div>
+  </div>
+</div>
+
+<!-- HAFTALIK PLAN -->
+<div class="page" id="page-plan">
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:14px">📅 Haftalık Plan</div>
+  <div class="week-header">
+    <button class="week-nav-btn" onclick="changeWeek(-1)">‹</button>
+    <div class="week-label" id="weekLabel">Bu Hafta</div>
+    <button class="week-nav-btn" onclick="changeWeek(1)">›</button>
+  </div>
+  <div id="dayCards"></div>
+</div>
+
+<!-- DENEME SINAVI -->
+<div class="page" id="page-deneme">
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:6px">📊 Deneme Sınavları</div>
+  <div style="font-size:0.8rem;color:var(--gray);margin-bottom:14px">LGS formatında Sözel + Sayısal</div>
+
+  <!-- Giriş formu -->
+  <div class="card">
+    <div class="section-title">✏️ Yeni Deneme Gir</div>
+    <div class="form-group">
+      <label>Tarih</label>
+      <input type="date" id="denemeTarih">
+    </div>
+    <div class="form-group">
+      <label>Deneme Adı</label>
+      <input type="text" id="denemeAd" placeholder="örn: TonguçAkademi 3. Deneme">
+    </div>
+
+    <!-- SÖZEL OTURUM -->
+    <div class="lgs-format">
+      <div class="oturum-title">📖 Sözel Oturum</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">
+        <div class="net-label">Ders</div><div class="net-label">D/Y/B</div><div class="net-label">Net</div>
+      </div>
+      <div id="sozelInputlar"></div>
+    </div>
+
+    <!-- SAYISAL OTURUM -->
+    <div class="lgs-format" style="margin-top:10px">
+      <div class="oturum-title">🔢 Sayısal Oturum</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">
+        <div class="net-label">Ders</div><div class="net-label">D/Y/B</div><div class="net-label">Net</div>
+      </div>
+      <div id="sayisalInputlar"></div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:12px" onclick="denemelKaydet()">💾 Kaydet</button>
+  </div>
+
+  <!-- Grafik -->
+  <div class="card">
+    <div class="section-title">📈 Net Gelişim Grafiği</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="grafDersSecim"></div>
+    <canvas id="netGrafik"></canvas>
+  </div>
+
+  <!-- Geçmiş -->
+  <div class="card">
+    <div class="section-title">📋 Geçmiş Denemeler</div>
+    <div id="denemelerListe"></div>
+  </div>
+</div>
+
+<!-- KONU TAKİBİ -->
+<div class="page" id="page-konu">
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:14px">📚 Konu Takibi</div>
+
+  <div class="sinif-grid" id="konuSinifBtns">
+    <button class="sinif-btn active" onclick="konuSinifSec('5')" id="kbtn5">5. Sınıf</button>
+    <button class="sinif-btn" onclick="konuSinifSec('6')" id="kbtn6">6. Sınıf</button>
+    <button class="sinif-btn" onclick="konuSinifSec('7')" id="kbtn7">7. Sınıf</button>
+    <button class="sinif-btn" onclick="konuSinifSec('8')" id="kbtn8">8. Sınıf</button>
+  </div>
+
+  <div class="konu-ders-tab" id="konuDersTabs"></div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-weight:800;font-size:0.85rem" id="konuDersBaslik">Türkçe</div>
+      <div style="font-size:0.78rem;color:var(--gray)" id="konuIlerleme">0/0</div>
+    </div>
+    <div class="konu-progress"><div class="konu-progress-fill" id="konuProgressFill" style="width:0%"></div></div>
+    <div id="konuListesi"></div>
+  </div>
+</div>
+
+<!-- ROZETLER -->
+<div class="page" id="page-rozet">
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:14px">🏅 Rozetlerim</div>
+  <div class="card">
+    <div class="rozet-grid" id="rozetGrid"></div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,#061830,#0a3060);color:white;margin-top:14px">
+    <div style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-bottom:6px;font-weight:700">Sonraki rozet</div>
+    <div id="sonrakiRozet" style="font-size:0.85rem;color:rgba(255,255,255,0.9)">Tüm rozetler için çalışmaya devam et!</div>
+  </div>
+</div>
+
+<!-- PROFİL -->
+<div class="page" id="page-profil">
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:14px">👤 Profil</div>
+
+  <div class="card">
+    <div class="profil-avatar">🧭</div>
+    <div class="form-group">
+      <label>Adın</label>
+      <input type="text" id="profilAd" placeholder="Adını gir...">
+    </div>
+    <div class="form-group">
+      <label>Sınıfın</label>
+      <div class="sinif-grid" id="profilSinifBtns">
+        <button class="sinif-btn" onclick="profilSinifSec('5')" id="pbtn5">5. Sınıf</button>
+        <button class="sinif-btn" onclick="profilSinifSec('6')" id="pbtn6">6. Sınıf</button>
+        <button class="sinif-btn" onclick="profilSinifSec('7')" id="pbtn7">7. Sınıf</button>
+        <button class="sinif-btn" onclick="profilSinifSec('8')" id="pbtn8">8. Sınıf</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Hedef Lise</label>
+      <input type="text" id="profilHedef" placeholder="örn: Fen Lisesi, Anadolu Lisesi...">
+    </div>
+    <button class="btn btn-primary" onclick="profilKaydet()">💾 Kaydet</button>
+  </div>
+
+  <!-- Uyku Takibi -->
+  <div class="card">
+    <div class="section-title">😴 Uyku Takibi</div>
+    <div style="display:flex;align-items:center;gap:12px;background:var(--light-orange);border-radius:14px;padding:12px;margin-bottom:14px">
+      <span style="font-size:1.4rem">🌙</span>
+      <div style="flex:1">
+        <div style="font-size:0.8rem;font-weight:800;margin-bottom:6px">Kaç saat uyudun?</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="uDeg(-0.5)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:white;cursor:pointer;font-weight:900;font-size:1rem">−</button>
+          <div style="text-align:center;min-width:50px">
+            <div id="uSure" style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900">7.0</div>
+            <div style="font-size:0.65rem;color:var(--gray);font-weight:700">SAAT</div>
+          </div>
+          <button onclick="uDeg(0.5)" style="width:28px;height:28px;border-radius:50%;border:none;background:var(--orange);cursor:pointer;font-weight:900;font-size:1rem;color:white">+</button>
+          <button onclick="uKaydet()" style="padding:6px 14px;border-radius:20px;border:none;background:var(--orange);color:white;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer">Kaydet</button>
+          <button onclick="uSil()" id="uSilBtn" style="padding:6px 10px;border-radius:20px;border:2px solid var(--border);background:white;color:var(--red);font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;display:none">🗑</button>
+        </div>
+      </div>
+      <div id="uEmoji" style="font-size:1.8rem">😐</div>
+    </div>
+    <div id="uTavsiye" style="display:none;padding:10px 14px;border-radius:12px;border-left:3px solid var(--orange);background:var(--light-orange);font-size:0.78rem;line-height:1.5;margin-bottom:12px"></div>
+    <div style="font-size:0.72rem;font-weight:800;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Son 7 Gün</div>
+    <div id="uGrafik" style="display:flex;align-items:flex-end;gap:5px;height:70px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="text-align:center"><div id="uOrt" style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--text)">-</div><div style="font-size:0.65rem;color:var(--gray);font-weight:700">ORT.</div></div>
+      <div style="text-align:center"><div id="uMax" style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--green)">-</div><div style="font-size:0.65rem;color:var(--gray);font-weight:700">EN ÇOK</div></div>
+      <div style="text-align:center"><div id="uMin" style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--red)">-</div><div style="font-size:0.65rem;color:var(--gray);font-weight:700">EN AZ</div></div>
+    </div>
+  </div>
+
+  <!-- Veri -->
+  <div class="card">
+    <div class="section-title">🔧 Veri Yönetimi</div>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="veriDisa()">📤 Verileri Dışa Aktar</button>
+    <button class="btn" style="width:100%;background:#fff0f0;color:var(--red);border:2px solid #fecaca" onclick="veriSifirla()">🗑 Tüm Verileri Sıfırla</button>
+  </div>
+</div>
+
+<!-- ALT NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('home')" id="nav-home"><span class="icon">🏠</span>Ana</button>
+  <button class="nav-btn" onclick="showPage('plan')" id="nav-plan"><span class="icon">📅</span>Plan</button>
+  <button class="nav-btn" onclick="showPage('deneme')" id="nav-deneme"><span class="icon">📊</span>Deneme</button>
+  <button class="nav-btn" onclick="showPage('konu')" id="nav-konu"><span class="icon">📚</span>Konu</button>
+  <button class="nav-btn" onclick="showPage('rozet')" id="nav-rozet"><span class="icon">🏅</span>Rozet</button>
+  <button class="nav-btn" onclick="showPage('profil')" id="nav-profil"><span class="icon">👤</span>Profil</button>
+</nav>
+
+<script>
+// ======== DATA ========
+const DATA = {
+  get(k) { try { return JSON.parse(localStorage.getItem('po_'+k)); } catch(e) { return null; } },
+  set(k,v) { try { localStorage.setItem('po_'+k, JSON.stringify(v)); } catch(e) {} },
+};
+
+// ======== KONU LİSTELERİ ========
+// Kaynak: tymm.meb.gov.tr — Türkiye Yüzyılı Maarif Modeli Öğretim Programları (2024)
+const KONULAR = {
+  '5': {
+    'Türkçe': [
+      'Tema 1: Oyun Dünyası',
+      'Tema 2: Atatürk\'ü Tanımak',
+      'Tema 3: Duygularımı Tanıyorum',
+      'Tema 4: Geleneklerimiz',
+      'Tema 5: İletişim ve Sosyal İlişkiler',
+      'Tema 6: Sağlıklı Yaşıyorum',
+    ],
+    'Matematik': [
+      '__B__1. TEMA: GEOMETRİK ŞEKİLLER',
+      '1. Temel Geometrik Şekiller ve Özellikleri',
+      '2. Temel Geometrik Çizimlerin Özellikleri',
+      '3. Açıları Ölçme',
+      '4. Doğruların Yolculuğu',
+      '5. Doğrulardan Çokgenlere',
+      '6. Üçgen',
+      '__B__2. TEMA: SAYILAR VE NİCELİKLER (1): DOĞAL SAYILAR VE İŞLEMLER',
+      '1. Çok Basamaklı Doğal Sayıları Okuma ve Yazma',
+      '2. Gerçek Yaşam Problemlerini Çözebilme',
+      '__B__3. TEMA: GEOMETRİK NİCELİKLER',
+      '1. Dikdörtgende Çevre Uzunluğu',
+      '2. Dikdörtgenin Alanı',
+      '3. Dikdörtgende Çevre Uzunluğu ve Alan',
+      '__B__4. TEMA: SAYILAR VE NİCELİKLER (2): KESİRLER',
+      '1. Kesirleri Farklı Biçimlerde Temsil Etme',
+      '2. Kesirleri Karşılaştırma',
+      '__B__5. TEMA: İSTATİSTİKSEL ARAŞTIRMA SÜRECİ',
+      '1. İstatistiksel Araştırma Süreci',
+      '2. Veri Görselleştirme Araçları',
+      '3. İstatistik Okuryazarlığı',
+      '4. Verilerin Değişebilirliği',
+      '__B__6. TEMA: İŞLEMLERLE CEBİRSEL DÜŞÜNME',
+      '1. Eşitliğin Korunumu ve İşlem Özellikleri',
+      '2. Sayı ve Şekil Örüntüleri',
+      '__B__7. TEMA: VERİDEN OLASILIĞA',
+      '1. Olayların Olasılığı',
+      '2. Olasılık Spektrumu',
+    ],
+    'Fen Bilimleri': [
+      '__B__1. ÜNİTE: GÖKYÜZÜNDEKİ KOMŞULARIMIZ VE BİZ',
+      '1. Gökyüzündeki Komşumuz: Güneş',
+      '2. Gökyüzündeki Komşumuz: Ay',
+      '3. Dünyamız ve Gökyüzündeki Komşularımız',
+      '__B__2. ÜNİTE: KUVVETİ TANIYALIM',
+      '1. Kuvvet ve Kuvvetin Ölçülmesi',
+      '2. Kütle ve Ağırlık İlişkisi',
+      '3. Sürtünme Kuvveti',
+      '__B__3. ÜNİTE: CANLILARIN YAPISINA YOLCULUK',
+      '1. Hücre ve Organelleri',
+      '2. Destek ve Hareket Sistemi',
+      '__B__4. ÜNİTE: IŞIĞIN DÜNYASI',
+      '1. Işığın Yayılması',
+      '2. Madde ve Işık',
+      '3. Tam Gölgenin Oluşumu',
+      '__B__5. ÜNİTE: MADDENİN DOĞASI',
+      '1. Maddenin Tanecikli Yapısı',
+      '2. Isı ve Sıcaklık',
+      '3. Maddenin Hâl Değişimi',
+      '4. Madde ve Isı',
+      '__B__6. ÜNİTE: YAŞAMIMIZDAKİ ELEKTRİK',
+      '1. Devre Elemanlarının Sembollerle Gösterimi ve Devre Şemaları',
+      '2. Basit Bir Elektrik Devresinde Ampul Parlaklığını Etkileyen Değişkenler',
+      '__B__7. ÜNİTE: SÜRDÜRÜLEBİLİR YAŞAM VE GERİ DÖNÜŞÜM',
+      '1. Evsel Atıklar ve Geri Dönüşüm',
+    ],
+    'Sosyal Bilgiler': [
+      '__B__1. ÜNİTE: BİRLİKTE YAŞAMAK',
+      '1. Gruplar ve Rollerimiz',
+      '2. Kültürel Zenginliklerin Birlikte Yaşamaya Katkısı',
+      '3. Yardımlaşma ve Dayanışmada Beraberiz',
+      '__B__2. ÜNİTE: EVİMİZ DÜNYA',
+      '1. İlimizin Göreli Konumu',
+      '2. Doğal ve Beşerî Çevremizdeki Değişim',
+      '3. İlimizde Yaşanabilecek Afetler ve Etkileri',
+      '4. Ülkemize Komşu Devletler',
+      '__B__3. ÜNİTE: ORTAK MİRASIMIZ',
+      '1. Ortak Kültürel Mirasımız',
+      '2. Anadolu\'nun İlk Yerleşim Yerlerinde Yaşam',
+      '3. Mezopotamya ve Anadolu Medeniyetlerinin Ortak Kültürel Mirasa Katkıları',
+      '__B__4. ÜNİTE: YAŞAYAN DEMOKRASİMİZ',
+      '1. Demokrasi ve Cumhuriyetin Temel Nitelikleri',
+      '2. Etkin Vatandaşın Özellikleri',
+      '3. Temel Hak ve Sorumluluklarımız',
+      '4. Sorunlarımızın Çözümünde Kurumlar',
+      '__B__5. ÜNİTE: HAYATIMIZDAKİ EKONOMİ',
+      '1. Kaynaklarımızın Verimli Kullanımı',
+      '2. Bütçemi Planlıyorum',
+      '3. İlimizdeki Ekonomik Faaliyetler',
+      '__B__6. ÜNİTE: TEKNOLOJİ VE SOSYAL BİLİMLER',
+      '1. Teknolojik Gelişmelerin Toplum Hayatına Etkileri',
+      '2. Teknolojik Ürünlerin Bilinçli Kullanımı',
+    ],
+    'İngilizce': [
+      '1. Theme: School Life',
+      '2. Theme: Classroom Life',
+      '3. Theme: Personal Life',
+      '4. Theme: Family Life',
+      '5. Theme: Life in the Neighbourhood & City',
+      '6. Theme: Life in the World',
+      '7. Theme: Life in Nature',
+      '8. Theme: Life in the Universe & Future',
+    ],
+    'Din Kültürü': [
+      '1. Ünite: Allah İnancı',
+      '2. Ünite: Namaz',
+      '3. Ünite: Kur\'an-ı Kerim',
+      '4. Ünite: Peygamber Kıssaları',
+      '5. Ünite: Mimarimizde Dinî Motifler',
+    ],
+  },
+  '6': {
+    'Türkçe': [
+      'Tema 1: Dilimizin Zenginliği',
+      'Tema 2: Bağımsızlık Yolu',
+      'Tema 3: Farklı Dünyalar',
+      'Tema 4: İletişim ve Sosyal İlişkiler',
+      'Tema 5: Bilim ve Teknoloji',
+      'Tema 6: Lider Ruhlar',
+    ],
+    'Matematik': [
+      '__B__1. TEMA: SAYILAR VE NİCELİKLER (1)',
+      '1. Çarpanlar',
+      '2. Katlar',
+      '3. Kalansız Bölünebilme',
+      '4. Asal Sayılar',
+      '5. Ortak Kat',
+      '6. Ortak Bölen',
+      '__B__2. TEMA: İSTATİSTİKSEL ARAŞTIRMA SÜRECİ',
+      '1. Kategorik ve Nicel Veriye Dayanan Araştırma Sorusu Oluşturma',
+      '2. Araştırma Sorularında Sağlanması Gereken Ölçütler',
+      '3. İstatistiksel Araştırma Sürecinde Planlama',
+      '4. Anket Sorusu Hazırlama',
+      '5. Verileri Görselleştirme ve Özetleme',
+      '6. Sonuçları Yorumlama',
+      '7. Sonuç veya Yorumları Tartışma',
+      '__B__3. TEMA: SAYILAR VE NİCELİKLER (2)',
+      '1. Ondalık Gösterimlerde Basamak Değeri',
+      '2. Ondalık Gösterimlerde Yuvarlama',
+      '3. Kesir ile Bölme İşlemi İlişkisi',
+      '4. Uzunluk Ölçme Birimleri',
+      '__B__4. TEMA: VERİDEN OLASILIĞA',
+      '1. Bir Olayın Olasılığını Gözleme Dayalı Tahmin Etme',
+      '__B__5. TEMA: GEOMETRİK ŞEKİLLER',
+      '1. İki Paralel Doğru ve Bir Kesenle Oluşturulan Açılar',
+      '2. İki Paralel Doğru ve İki Kesen',
+      '3. Üçgenin Açıları',
+      '4. Dörtgenlerin Özellikleri',
+      '__B__6. TEMA: İŞLEMLERLE CEBİRSEL DÜŞÜNME VE DEĞİŞİMLER',
+      '1. Bilinmeyen Nicelikler',
+      '2. Örüntüler',
+      '3. Algoritma',
+      '__B__7. TEMA: GEOMETRİK NİCELİKLER',
+      '1. Alan Ölçme Birimleri',
+      '2. Paralelkenar ve Üçgenin Alanı',
+      '3. Çemberin ve Çapının Uzunlukları Arasındaki İlişki',
+      '4. Çemberde Merkez Açı ve Merkez Açının Gördüğü Yayın Uzunluğu',
+    ],
+    'Fen Bilimleri': [
+      '__B__1. ÜNİTE: GÜNEŞ SİSTEMİ VE TUTULMALAR',
+      '1. Güneş Sistemi',
+      '2. Güneş ve Ay Tutulmaları',
+      '__B__2. ÜNİTE: KUVVETİN ETKİSİNDE HAREKET',
+      '1. Bileşke Kuvvet',
+      '2. Sabit Suratlı ve Sabit Hızlı Hareket',
+      '__B__3. ÜNİTE: CANLILARDA SİSTEMLER',
+      '1. Bitki ve Hayvanlarda Üreme, Büyüme ve Gelişme',
+      '2. Düzenleyici ve Denetleyici Sistemler',
+      '__B__4. ÜNİTE: IŞIĞIN YANSIMASI VE RENKLER',
+      '1. Işığın Yansıması',
+      '2. Aynalar',
+      '3. Işığın Soğurulması',
+      '__B__5. ÜNİTE: MADDENİN AYIRT EDİCİ ÖZELLİKLERİ',
+      '1. Genleşme ve Büzülme',
+      '2. Maddenin Hâl Değişim Noktaları',
+      '3. Yoğunluk',
+      '__B__6. ÜNİTE: ELEKTRİĞİN İLETİMİ VE DİRENÇ',
+      '1. Elektriğin İletimi',
+      '2. Elektriksel Direnç ve Bağlı Olduğu Faktörler',
+      '__B__7. ÜNİTE: SÜRDÜRÜLEBİLİR YAŞAM VE ETKİLEŞİM',
+      '1. Biyoçeşitlilik',
+      '2. İnsan ve Çevre Etkileşimi',
+    ],
+    'Sosyal Bilgiler': [
+      '__B__1. ÜNİTE: BİRLİKTE YAŞAMAK',
+      '1. Zaman İçinde Değişen Gruplar ve Roller',
+      '2. Kültürel Bağlarımızın ve Millî Değerlerimizin Toplumsal Birlikteliğe Etkisi',
+      '3. Toplumsal Sorunlar ve Çözüm Önerileri',
+      '__B__2. ÜNİTE: EVİMİZ DÜNYA',
+      '1. Ülkemizin, Kıtaların ve Okyanusların Konum Özellikleri',
+      '2. Doğal ve Beşerî Çevre Özellikleri Arasındaki İlişki',
+      '3. Ülkemizin Türk Dünyasıyla Kültürel İş Birlikleri',
+      '__B__3. ÜNİTE: ORTAK MİRASIMIZ',
+      '1. Türkistan\'da Kurulan İlk Türk Devletlerinin Medeniyetimize Katkıları',
+      '2. VII-XIII. Yüzyıllar Arasında İslam Medeniyetinin İnsanlığın Ortak Mirasına Katkıları',
+      '3. İslamiyet\'in Kabulüyle Türklerin Sosyal ve Kültürel Hayatlarında Meydana Gelen Değişimler',
+      '4. XI-XIII. Yüzyıllar Arasında Meydana Gelen Askerî Mücadelelerin Anadolu\'nun Türkleşmesi ve İslamlaşmasına Katkıları',
+      '__B__4. ÜNİTE: YAŞAYAN DEMOKRASİMİZ',
+      '1. Yönetimin Karar Alma Sürecini Etkileyen Unsurlar',
+      '2. Temel Hak ve Sorumluluklarının Toplumsal Düzenin Sürdürülmesindeki Önemi',
+      '3. Dijitalleşme ve Teknolojik Gelişmelerin Vatandaşlık Hak ve Sorumluluklarına Etkileri',
+      '__B__5. ÜNİTE: HAYATIMIZDAKİ EKONOMİ',
+      '1. Ülkemizin Kaynakları ve Ekonomik Faaliyetler',
+      '2. Ekonomik Faaliyetler ve Meslekler',
+      '3. Tasarlanan Bir Ürünün Yatırım ve Pazarlama Süreci',
+      '__B__6. ÜNİTE: TEKNOLOJİ VE SOSYAL BİLİMLER',
+      '1. Ulaşım ve İletişim Teknolojilerinin Kültürel Etkileşimdeki Rolü',
+      '2. Telif ve Patent Süreci',
+    ],
+    'İngilizce': [
+      '1. Theme: School Life & Education',
+      '2. Theme: Classroom Life & Learning',
+      '3. Theme: Personal Life & Well-Being',
+      '4. Theme: Family Life & Home',
+      '5. Theme: Life in the Neighbourhood, City & Social Life',
+      '6. Theme: Life in the World & Culture',
+      '7. Theme: Life in Nature & Global Problems',
+      '8. Theme: Life in the Universe & Future',
+    ],
+    'Din Kültürü': [
+      '1. Ünite: Peygamber ve İlahi Kitap İnancı',
+      '2. Ünite: Ramazan ve Oruç',
+      '3. Ünite: Ahlaki Davranışlar',
+      '4. Ünite: Peygamberliğinden Önce Hz. Muhammed',
+      '5. Ünite: Kültürümüzdeki Dini Motifler',
+    ],
+  },
+  '7': {
+    'Türkçe': [
+      'Tema 1: Hayat Boyu Gelişim',
+      'Tema 2: Bir Hilal Uğruna',
+      'Tema 3: İletişim ve Sosyal İlişkiler',
+      'Tema 4: Türk Sanatı',
+      'Tema 5: Okuma Kültürü',
+      'Tema 6: Hak ve Sorumluluklar',
+    ],
+    'Matematik': [
+      '__B__1. TEMA: SAYILAR VE NİCELİKLER',
+      '1. Rasyonel Sayılar ve Rasyonel Sayılarla İşlemler: Tam Sayılar',
+      '2. Rasyonel Sayılar ve Farklı Temsilleri',
+      '3. Rasyonel Sayıların Karşılaştırılması',
+      '4. Rasyonel Sayılarla İşlemler ve Problem Çözme',
+      '5. Oran',
+      '6. Orantılı Durumlar',
+      '7. Doğru Orantılı Durumlara İlişkin Problem Çözme',
+      '__B__2. TEMA: İŞLEMLERLE CEBİRSEL DÜŞÜNME VE DEĞİŞİMLER',
+      '1. Cebirsel İfadelerle İşlemler',
+      '2. Denklem ve Eşitsizlikler',
+      '3. İspat',
+      '4. Cebirsel İfadelerle İşlemler ve Algoritma',
+      '__B__3. TEMA: DÖNÜŞÜM',
+      '1. Yansıma Dönüşümü',
+      '2. Orta Dikme ve Açıortay İnşası',
+      '__B__4. TEMA: GEOMETRİK NİCELİKLER',
+      '1. Cisimlerin Farklı Yönlerden Görünümleri',
+      '2. Dikdörtgenler Prizmasının Hacmi ve Yüzey Alanı',
+      '3. Hacim Ölçme Birimleri',
+      '4. Eşkenar Dörtgen ve Yamuk',
+      '5. Daire ve Daire Diliminin Alanı',
+      '__B__5. TEMA: GEOMETRİK ŞEKİLLER',
+      '1. Üçgenlerde Kenarortay ve İnşası, Açıortay, Yükseklik',
+      '__B__6. TEMA: İSTATİSTİKSEL ARAŞTIRMA SÜRECİ',
+      '1. Kategorik ve Nicel (Sürekli) Veri Dağılımları',
+      '__B__7. TEMA: VERİDEN OLASILIĞA',
+      '1. Teorik Olasılık',
+    ],
+    'Fen Bilimleri': [
+      '__B__1. ÜNİTE: UZAY ÇAĞI',
+      '1. Türkiye ve Uzay Araştırmaları',
+      '2. Uzayda Neler Var?',
+      '__B__2. ÜNİTE: KUVVET VE ENERJİYİ KEŞFEDELİM',
+      '1. Kuvvet, İş ve Enerji İlişkisi',
+      '2. Enerji Dönüşümleri',
+      '__B__3. ÜNİTE: VÜCUDUMUZDAKİ SİSTEMLER',
+      '1. Sindirim Sistemi',
+      '2. Dolaşım Sistemi',
+      '3. Solunum Sistemi',
+      '4. Boşaltım Sistemi',
+      '__B__4. ÜNİTE: IŞIĞIN KIRILMASI VE MERCEKLER',
+      '1. Işığın Kırılması',
+      '2. Mercekler',
+      '__B__5. ÜNİTE: MADDENİN DOĞASINA YOLCULUK',
+      '1. Maddenin Tanecikli Yapısı',
+      '2. Saf Maddeler',
+      '3. Karışımlar',
+      '4. Karışımların Ayrılması',
+      '__B__6. ÜNİTE: ELEKTRİKLENME',
+      '1. Elektrik Yükleri ve Elektriklenme',
+      '__B__7. ÜNİTE: SÜRDÜRÜLEBİLİR YAŞAM VE GERİ DÖNÜŞÜM',
+      '1. Besin Zinciri ve Enerji Akışı',
+      '2. Sürdürülebilir Yaşam',
+    ],
+    'Sosyal Bilgiler': [
+      '__B__1. ÖĞRENME ALANI: BİRLİKTE YAŞAMAK',
+      '1. Gruplarda ve Sosyal Hayatta İletişimin Önemi',
+      '2. Özel Gereksinimli Bireyler İçin Fırsat Eşitliği',
+      '3. Millî Meseleler Karşısında Türk Toplumunun Tutum ve Davranışları',
+      '__B__2. ÖĞRENME ALANI: EVİMİZ DÜNYA',
+      '1. Küreselleşmenin İnsan ve Toplum Hayatına Etkisi',
+      '2. Bölgesel ve Küresel Sorunların Çözümünde Ülkemizin Rolü',
+      '__B__3. ÖĞRENME ALANI: ORTAK MİRASIMIZ',
+      '1. Osmanlı Devleti\'nin Cihan Devleti Hâline Gelmesini Sağlayan Politikalar',
+      '2. Osmanlı Devleti\'nin Uygulamaya Koyduğu Yenilikler',
+      '3. Osmanlı Kültür ve Medeniyeti',
+      '__B__4. ÖĞRENME ALANI: YAŞAYAN DEMOKRASİMİZ',
+      '1. Türkiye Cumhuriyeti\'nin Nitelikleri',
+      '2. Türkiye Cumhuriyeti\'nin Yönetim Yapısı',
+      '3. Ülkemizde Demokrasinin Gelişimi',
+      '4. Demokrasinin Uygulanma Sürecinde Karşılaşılan Sorunlar',
+      '__B__5. ÖĞRENME ALANI: HAYATIMIZDAKİ EKONOMİ',
+      '1. Millî Kalkınma Hamleleri',
+      '2. Ekonomik Gelişmişlik ile Üretim, Dağıtım ve Tüketim Arasındaki Döngü',
+      '__B__6. ÖĞRENME ALANI: TEKNOLOJİ VE SOSYAL BİLİMLER',
+      '1. Bilimsel ve Teknolojik Gelişmelerin Gelecekteki Hayata Etkisi',
+      '2. Sosyal Bilimlerin Çalışma Alanları',
+      '3. Toplumsal Hayatta Karşılaşılabilecek Problemlere Çözüm Üretme',
+    ],
+    'İngilizce': [
+      '1. Theme: School Life & Education',
+      '2. Theme: Classroom Life & Learning',
+      '3. Theme: Personal Life & Well-Being',
+      '4. Theme: Family Life & Home',
+      '5. Theme: Life in the Neighbourhood & City and Social Life',
+      '6. Theme: Life in the World & Culture',
+      '7. Theme: Life in Nature',
+      '8. Theme: Life in the Universe & Future',
+    ],
+    'Din Kültürü': [
+      '1. Ünite: Melek ve Ahiret İnancı',
+      '2. Ünite: Hac, Umre ve Kurban',
+      '3. Ünite: İslam Düşüncesinde Yorumlar',
+      '4. Ünite: Peygamber Olarak Hz. Muhammed',
+      '5. Ünite: Yaşayan Dünya Dinleri',
+    ],
+  },
+  '8': {
+    'Türkçe': [
+      'Tema 1: Erdemler',
+      'Tema 2: Doğa ve Evren',
+      'Tema 3: Millî Kültürümüz',
+      'Tema 4: Millî Mücadele ve Atatürk',
+      'Tema 5: Vatandaşlık',
+      'Tema 6: Sağlık ve Spor',
+      'Tema 7: Sanat',
+      'Tema 8: Bilim ve Teknoloji',
+    ],
+    'Matematik': [
+      '__B__1. ÜNİTE: ÇARPANLAR VE KATLAR — ÜSLÜ İFADELER',
+      '1. Pozitif Tam Sayıların Çarpanları',
+      '2. EBOB ve EKOK',
+      '3. Tam Sayıların Kuvvetleri',
+      '4. Ondalık Gösterim ve Bilimsel Gösterim',
+      '__B__2. ÜNİTE: KAREKÖK — VERİ ANALİZİ',
+      '1. Tam Kare Sayılar ve Karekökleri',
+      '2. Karekökün Sayılar Arasındaki Konumu',
+      '3. a√b Şeklinde Yazma',
+      '4. Karekökte Dört İşlem',
+      '5. Ondalık Karekökler',
+      '6. Gerçek Sayılar',
+      '7. Grafik Yorumlama',
+      '__B__3. ÜNİTE: OLASILIK — CEBİRSEL İFADELER VE ÖZDEŞLİKLER',
+      '1. Olası Durumlar ve Karşılaştırmalar',
+      '2. Basit Olayların Olasılığı',
+      '3. Cebirsel İfadeleri Farklı Yazma',
+      '4. Çarpma ve Çarpanlara Ayırma',
+      '__B__4. ÜNİTE: DOĞRUSAL DENKLEMLER — EŞİTSİZLİKLER',
+      '1. Birinci Dereceden Bir Bilinmeyenli Denklemler',
+      '2. Koordinat Sistemi ve Sıralı İkililer',
+      '3. Doğrusal İlişkiler ve Grafikler',
+      '4. Gerçek Hayat Uygulamaları',
+      '5. Doğrunun Eğimi',
+      '6. Birinci Dereceden Bir Bilinmeyenli Eşitsizlikler',
+      '__B__5. ÜNİTE: ÜÇGENLER — EŞLİK VE BENZERLİK',
+      '1. Kenarortay, Açıortay, Yükseklik',
+      '2. Kenar Uzunlukları ve Açı İlişkileri',
+      '3. Üçgen Çizimleri',
+      '4. Pisagor Bağıntısı',
+      '5. Eşlik ve Benzerlik',
+      '__B__6. ÜNİTE: DÖNÜŞÜM GEOMETRİSİ — GEOMETRİK CİSİMLER',
+      '1. Öteleme ve Yansıma Dönüşümleri',
+      '2. Ardışık Dönüşümler',
+      '3. Dik Prizmalar',
+      '4. Dik Dairesel Silindir (Yüzey Alanı, Hacim)',
+      '5. Dik Dairesel Koni',
+    ],
+    'Fen Bilimleri': [
+      '__B__1. ÜNİTE: MEVSİMLER VE İKLİM',
+      '1. Mevsimlerin Oluşumu',
+      '2. İklim ve Hava Hareketleri',
+      '__B__2. ÜNİTE: DNA VE GENETİK KOD',
+      '1. DNA ve Genetik Kod',
+      '2. Kalıtım',
+      '3. Mutasyon ve Modifikasyon',
+      '4. Adaptasyon',
+      '5. Biyoteknoloji',
+      '__B__3. ÜNİTE: BASINÇ',
+      '1. Katı Basıncı',
+      '2. Sıvı Basıncı',
+      '3. Basıncın Günlük Yaşam ve Teknolojideki Uygulamaları',
+      '__B__4. ÜNİTE: MADDE VE ENDÜSTRİ',
+      '1. Periyodik Sistem',
+      '2. Fiziksel ve Kimyasal Değişimler',
+      '3. Kimyasal Tepkimeler',
+      '4. Asitler ve Bazlar',
+      '5. Maddenin Isı ile Etkileşimi',
+      '6. Türkiye\'de Kimya Endüstrisi',
+      '__B__5. ÜNİTE: BASİT MAKİNELER',
+      '1. Basit Makineler',
+      '__B__6. ÜNİTE: ENERJİ DÖNÜŞÜMLERI VE ÇEVRE BİLİMİ',
+      '1. Besin Zinciri ve Enerji Akışı',
+      '2. Enerji Dönüşümleri',
+      '3. Madde Döngüleri ve Çevre Sorunları',
+      '4. Sürdürülebilir Kalkınma',
+      '__B__7. ÜNİTE: ELEKTRİK YÜKLERİ VE ELEKTRİK ENERJİSİ',
+      '1. Elektrik Yükleri ve Elektriklenme',
+      '2. Elektrik Yüklü Cisimler',
+      '3. Elektrik Enerjisinin Dönüşümü',
+    ],
+    'İnkılap Tarihi': [
+      '__B__1. ÜNİTE: BİR KAHRAMAN DOĞUYOR',
+      '1. Gelişen Avrupa ve Güç Kaybeden Osmanlı Devleti',
+      '2. Mustafa Kemal\'in Çocukluk Dönemi ve Öğrenim Hayatı',
+      '3. Mustafa Kemal\'in Fikir Hayatını Etkileyen Kişiler ve Olaylar',
+      '4. Mustafa Kemal\'in Askerlik Hayatı',
+      '__B__2. ÜNİTE: MİLLÎ UYANIS',
+      '1. I. Dünya Savaşı (1914-1918)',
+      '2. I. Dünya Savaşı\'nda Osmanlı Devleti',
+      '3. Mondros Ateşkes Anlaşmasının İmzalanması ve Uygulanması',
+      '4. Kuvâ-yı Millîye Hareketi ve Cemiyetler',
+      '5. Millî Mücadele\'nin Hazırlık Dönemi',
+      '6. Misak-ı Millî\'nin Kabulü ve Büyük Millet Meclisinin Açılması',
+      '7. Büyük Millet Meclisine Karşı Ayaklanmalar',
+      '8. Sevr Antlaşması',
+      '__B__3. ÜNİTE: MİLLÎ BİR DESTAN: YA İSTİKLAL YA ÖLÜM!',
+      '1. Millî Mücadele Döneminde Doğu ve Güney Cepheleri',
+      '2. Millî Mücadele Döneminde Batı Cepheleri',
+      '3. Maarif Kongresi',
+      '4. Başkomutanlık Kanunu ve Tekâlif-i Milliye',
+      '5. Sakarya Meydan Savaşından Mudanya Ateşkes Antlaşmasına Mustafa Kemal',
+      '6. Lozan Barış Antlaşması',
+      '7. Millî Mücadelenin Sanata ve Edebiyata Yansımaları',
+      '__B__4. ÜNİTE: ATATÜRKÇÜLÜK VE ÇAĞDAŞLAŞAN TÜRKİYE',
+      '1. Atatürk İlkeleri',
+      '2. Siyasal Alanda Yapılan İnkılaplar',
+      '3. Hukuk Alanında Yapılan İnkılaplar',
+      '4. Eğitim ve Kültürel Alanda Yapılan İnkılaplar',
+      '5. Toplumsal Alanda Yapılan İnkılaplar',
+      '6. Ekonomik Alanda Yapılan İnkılaplar',
+      '7. Sağlık Alanındaki Gelişmeler',
+      '8. Cumhuriyetin Sağladığı Kazanımlar ve Atatürk\'ün Türk Milletine Gösterdiği Hedefler',
+      '9. Atatürk İlke ve İnkılaplarını Oluşturan Temel Esaslar',
+      '__B__5. ÜNİTE: DEMOKRATİKLEŞME ÇABALARI',
+      '1. Atatürk Döneminde Demokratikleşme Yolunda Atılan Adımlar',
+      '2. Mustafa Kemal\'e Suikast Girişimi',
+      '3. Türkiye Cumhuriyeti\'ne Yönelik Tehditler',
+      '__B__6. ÜNİTE: ATATÜRK DÖNEMİ TÜRK DIŞ POLİTİKASI',
+      '1. Atatürk Dönemi Türk Dış Politikasının Temel İlke ve Amaçları',
+      '2. Atatürk Dönemi Türk Dış Politikasında Yaşanan Gelişmeler',
+      '3. Hatay\'ın Türkiye\'ye Katılması',
+      '__B__7. ÜNİTE: ATATÜRK\'ÜN ÖLÜMÜ VE SONRASI',
+      '1. Atatürk\'ün Ölümü ve Ölümünün Yansımaları',
+      '2. Atatürk\'ün Eserleri',
+      '3. Atatürk\'ün II. Dünya Savaşı Öncesi Tespitleri ve Girişimleri',
+      '4. II. Dünya Savaşı ve Savaşın Türkiye\'ye Etkileri',
+      '5. Türkiye\'nin Çok Partili Hayata Geçişi',
+    ],
+    'İngilizce': [
+      '1. Ünite: Friendship',
+      '2. Ünite: Teen Life',
+      '3. Ünite: In the Kitchen',
+      '4. Ünite: On the Phone',
+      '5. Ünite: The Internet',
+      '6. Ünite: Adventures',
+      '7. Ünite: Tourism',
+      '8. Ünite: Chores',
+      '9. Ünite: Science',
+      '10. Ünite: Natural Forces',
+    ],
+    'Din Kültürü': [
+      '1. Ünite: Kader İnancı',
+      '2. Ünite: Zekât ve Sadaka',
+      '3. Ünite: Din ve Hayat',
+      "4. Ünite: Hz. Muhammed'in Örnekliliği",
+      "5. Ünite: Kur'an-ı Kerim ve Özellikleri",
+    ],
+  }
+};
+
+
+// ======== DENEME DERSLERİ ========
+const SOZEL_DERSLER = [
+  { id:'turkce', ad:'Türkçe', soru:20, renk:'#e11d48' },
+  { id:'inkilap', ad:'İnkılap/Sos.', soru:10, renk:'#7c3aed' },
+  { id:'din', ad:'Din K.', soru:10, renk:'#059669' },
+  { id:'ingilizce', ad:'İngilizce', soru:10, renk:'#0891b2' },
+];
+const SAYISAL_DERSLER = [
+  { id:'matematik', ad:'Matematik', soru:20, renk:'#2563eb' },
+  { id:'fen', ad:'Fen Bilim.', soru:20, renk:'#16a34a' },
+];
+
+// ======== ROZETLER ========
+const ROZETLER = [
+  { id:'ilk_deneme', icon:'🎯', ad:'İlk Deneme', kosul:'İlk denemeyi gir', kontrol: d => (d.get('denemeler')||[]).length >= 1 },
+  { id:'bes_deneme', icon:'📊', ad:'5 Deneme', kosul:'5 deneme gir', kontrol: d => (d.get('denemeler')||[]).length >= 5 },
+  { id:'on_deneme', icon:'🏆', ad:'10 Deneme', kosul:'10 deneme gir', kontrol: d => (d.get('denemeler')||[]).length >= 10 },
+  { id:'planci', icon:'📅', ad:'Plancı', kosul:'İlk haftalık planı yap', kontrol: d => Object.keys(localStorage).some(k=>k.startsWith('po_week_')) },
+  { id:'ilk_konu', icon:'📚', ad:'Araştırmacı', kosul:'İlk konuyu tamamla', kontrol: d => Object.keys(localStorage).some(k=>k.startsWith('po_konu_')) },
+  { id:'uyku_takip', icon:'😴', ad:'Uyumcu', kosul:'7 gün uyku kaydet', kontrol: d => Object.keys(d.get('uyku')||{}).length >= 7 },
+  { id:'turkce_kral', icon:'📖', ad:'Türkçe Ustası', kosul:'Tüm Türkçe konuları bitir', kontrol: d => konuTumunuBitti('8','Türkçe') },
+  { id:'matematik_kral', icon:'🔢', ad:'Matematik Dehası', kosul:'Tüm 8. sınıf mat. bitir', kontrol: d => konuTumunuBitti('8','Matematik') },
+];
+
+function konuTumunuBitti(sinif, ders) {
+  const toplam = (KONULAR[sinif]?.[ders]||[]).length;
+  if (!toplam) return false;
+  let biten = 0;
+  (KONULAR[sinif][ders]).forEach((k,i) => { if (DATA.get(`konu_${sinif}_${ders}_${i}`)) biten++; });
+  return biten === toplam;
+}
+
+// ======== UTIL ========
+let _currentWeek = 0;
+let _konuSinif = '5';
+let _deferredInstallPrompt = null;
+let _konuDers = 'Türkçe';
+let _uSure = 7.0;
+let _grafDers = 'turkce';
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function getWeekKey(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay() + 1 + offset * 7);
+  return d.toISOString().slice(0,10);
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+name)?.classList.add('active');
+  document.getElementById('nav-'+name)?.classList.add('active');
+
+  if (name === 'home') loadHome();
+  if (name === 'plan') loadPlan();
+  if (name === 'deneme') loadDeneme();
+  if (name === 'konu') loadKonu();
+  if (name === 'rozet') loadRozet();
+  if (name === 'profil') { loadProfil(); uInit(); }
+}
+
+// ======== HOME ========
+function loadHome() {
+  const p = DATA.get('profil') || {};
+  document.getElementById('homeSelam').textContent = p.ad ? `Merhaba, ${p.ad} 👋` : 'Merhaba 👋';
+  document.getElementById('homeAd').textContent = p.ad ? p.ad : 'Pusulam';
+
+  const badge = document.getElementById('homeSinifBadge');
+  badge.innerHTML = '';
+  if (p.sinif) {
+    badge.innerHTML = `<span style="background:var(--orange);color:white;border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:800">${p.sinif}. Sınıf</span>`;
+  }
+  if (p.hedef) {
+    badge.innerHTML += `<span style="background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:700">🎯 ${p.hedef}</span>`;
+  }
+
+  // LGS geri sayım (her yıl Haziran'ın ilk Cumartesi'si)
+  const bugun = new Date();
+  const yil = bugun.getMonth() > 5 ? bugun.getFullYear()+1 : bugun.getFullYear();
+  let lgs = new Date(yil, 5, 1);
+  while (lgs.getDay() !== 6) lgs.setDate(lgs.getDate()+1);
+  const gun = Math.ceil((lgs - bugun) / 86400000);
+  document.getElementById('lgsGeriSayim').textContent = gun > 0 ? `${gun} gün` : 'Bugün!';
+
+  // İstatistik — sadece profil kurulmuşsa göster
+  const denemeler = DATA.get('denemeler') || [];
+  document.getElementById('sDeneme').textContent = denemeler.length;
+
+  let toplam = 0;
+  Object.keys(localStorage).forEach(k => { if(k.startsWith('po_konu_')) toplam++; });
+  document.getElementById('sToplam').textContent = toplam;
+
+  let rozet = 0;
+  ROZETLER.forEach(r => { if(r.kontrol(DATA)) rozet++; });
+  document.getElementById('sRozet').textContent = rozet;
+
+  document.getElementById('homeStats').style.display = p.ad ? 'flex' : 'none';
+
+  // Odak
+  const odak = DATA.get('odak_'+todayKey());
+  if (odak) document.getElementById('odakInput').value = odak;
+}
+
+function saveOdak() {
+  DATA.set('odak_'+todayKey(), document.getElementById('odakInput').value);
+  showToast('🎯 Günün odağı kaydedildi!');
+}
+
+// ======== PLAN ========
+function loadPlan() {
+  const weekKey = getWeekKey(_currentWeek);
+  const d = new Date(weekKey);
+  const end = new Date(weekKey); end.setDate(end.getDate()+6);
+  const fmt = dt => `${dt.getDate()} ${['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][dt.getMonth()]}`;
+  document.getElementById('weekLabel').textContent = `${fmt(d)} – ${fmt(end)}`;
+
+  const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+  const container = document.getElementById('dayCards');
+  container.innerHTML = '';
+
+  gunler.forEach((gun, i) => {
+    const dt = new Date(weekKey); dt.setDate(dt.getDate()+i);
+    const dKey = dt.toISOString().slice(0,10);
+    const wd = DATA.get('week_'+dKey) || { tasks: [] };
+    if (!wd.tasks) wd.tasks = [];
+    while (wd.tasks.length < 4) wd.tasks.push({ text:'', done:false });
+
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    const isToday = dKey === todayKey();
+    card.innerHTML = `
+      <div class="day-header" onclick="toggleDay(this)">
+        <div class="day-name">${gun}${isToday?' 📍':''}</div>
+        <div class="day-date">${fmt(dt)}</div>
+      </div>
+      <div class="day-body" style="display:${isToday?'block':'none'}">
+        ${wd.tasks.map((task,ti) => `
+          <div class="task-row${task.done?' completed':''}" id="tr_${dKey}_${ti}">
+            <input class="task-input" value="${task.text||''}" placeholder="Görev ${ti+1}..."
+              onchange="saveTask('${dKey}',${ti},this.value)">
+            <button class="task-check${task.done?' done':''}" onclick="toggleTask('${dKey}',${ti})">
+              ${task.done ? '✓' : ''}
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function toggleDay(header) {
+  const body = header.nextElementSibling;
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveTask(dKey, ti, val) {
+  const wd = DATA.get('week_'+dKey) || { tasks: [] };
+  if (!wd.tasks) wd.tasks = [];
+  while (wd.tasks.length <= ti) wd.tasks.push({ text:'', done:false });
+  wd.tasks[ti].text = val;
+  DATA.set('week_'+dKey, wd);
+}
+
+function toggleTask(dKey, ti) {
+  const wd = DATA.get('week_'+dKey) || { tasks: [] };
+  if (!wd.tasks) wd.tasks = [];
+  while (wd.tasks.length <= ti) wd.tasks.push({ text:'', done:false });
+  wd.tasks[ti].done = !wd.tasks[ti].done;
+  DATA.set('week_'+dKey, wd);
+  loadPlan();
+  showToast(wd.tasks[ti].done ? '✅ Tamamlandı!' : '↩️ Geri alındı');
+}
+
+function changeWeek(d) {
+  _currentWeek += d;
+  loadPlan();
+}
+
+// ======== DENEME ========
+function loadDeneme() {
+  // Form oluştur
+  const sozel = document.getElementById('sozelInputlar');
+  const sayisal = document.getElementById('sayisalInputlar');
+  sozel.innerHTML = '';
+  sayisal.innerHTML = '';
+
+  document.getElementById('denemeTarih').value = todayKey();
+
+  const netHesapla = (id) => {
+    const d = parseFloat(document.getElementById('d_'+id)?.value)||0;
+    const y = parseFloat(document.getElementById('y_'+id)?.value)||0;
+    const nEl = document.getElementById('n_'+id);
+    if(nEl) nEl.value = (d - y/3).toFixed(2);
+  };
+
+  SOZEL_DERSLER.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'ders-net-row';
+    row.innerHTML = `
+      <div class="ders-badge" style="background:${d.renk}20;color:${d.renk}">${d.ad}</div>
+      <div class="ders-input-group">
+        <div>
+          <div class="net-label">Doğru</div>
+          <input type="number" id="d_${d.id}" min="0" max="${d.soru}" placeholder="0" inputmode="numeric">
+        </div>
+        <div>
+          <div class="net-label">Yanlış</div>
+          <input type="number" id="y_${d.id}" min="0" max="${d.soru}" placeholder="0" inputmode="numeric">
+        </div>
+        <div>
+          <div class="net-label">Net</div>
+          <input type="text" id="n_${d.id}" placeholder="0.00" readonly style="background:rgba(255,255,255,0.2);font-weight:900;color:#fbbf24">
+        </div>
+      </div>`;
+    sozel.appendChild(row);
+    row.querySelector('#d_'+d.id).addEventListener('input', () => netHesapla(d.id));
+    row.querySelector('#y_'+d.id).addEventListener('input', () => netHesapla(d.id));
+  });
+
+  SAYISAL_DERSLER.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'ders-net-row';
+    row.innerHTML = `
+      <div class="ders-badge" style="background:${d.renk}20;color:${d.renk}">${d.ad}</div>
+      <div class="ders-input-group">
+        <div>
+          <div class="net-label">Doğru</div>
+          <input type="number" id="d_${d.id}" min="0" max="${d.soru}" placeholder="0" inputmode="numeric">
+        </div>
+        <div>
+          <div class="net-label">Yanlış</div>
+          <input type="number" id="y_${d.id}" min="0" max="${d.soru}" placeholder="0" inputmode="numeric">
+        </div>
+        <div>
+          <div class="net-label">Net</div>
+          <input type="text" id="n_${d.id}" placeholder="0.00" readonly style="background:rgba(255,255,255,0.2);font-weight:900;color:#fbbf24">
+        </div>
+      </div>`;
+    sayisal.appendChild(row);
+    row.querySelector('#d_'+d.id).addEventListener('input', () => netHesapla(d.id));
+    row.querySelector('#y_'+d.id).addEventListener('input', () => netHesapla(d.id));
+  });
+
+  // Grafik ders seçim
+  const grafSecim = document.getElementById('grafDersSecim');
+  grafSecim.innerHTML = [...SOZEL_DERSLER, ...SAYISAL_DERSLER].map(d =>
+    `<button class="konu-tab-btn${d.id===_grafDers?' active':''}" onclick="grafDersSec('${d.id}')">${d.ad}</button>`
+  ).join('');
+
+  loadDenemeListe();
+  grafCiz();
+}
+
+function denemelKaydet() {
+  const tarih = document.getElementById('denemeTarih').value || todayKey();
+  const ad = document.getElementById('denemeAd').value || 'Deneme';
+  const netler = {};
+  [...SOZEL_DERSLER, ...SAYISAL_DERSLER].forEach(d => {
+    const n = parseFloat(document.getElementById('n_'+d.id)?.value) || 0;
+    netler[d.id] = n;
+  });
+  const toplam = Object.values(netler).reduce((a,b)=>a+b,0);
+
+  const denemeler = DATA.get('denemeler') || [];
+  denemeler.push({ tarih, ad, netler, toplam });
+  DATA.set('denemeler', denemeler);
+
+  showToast('📊 Deneme kaydedildi!');
+  loadDenemeListe();
+  grafCiz();
+  rozetKontrol();
+}
+
+function loadDenemeListe() {
+  const denemeler = DATA.get('denemeler') || [];
+  const el = document.getElementById('denemelerListe');
+  if (!denemeler.length) { el.innerHTML = '<div style="text-align:center;color:var(--gray);font-size:0.82rem;padding:16px">Henüz deneme girilmedi</div>'; return; }
+
+  el.innerHTML = [...denemeler].reverse().slice(0,5).map((d,i) => {
+    const gerçekI = denemeler.length - 1 - i;
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:0.82rem">${d.ad}</div>
+          <div style="font-size:0.72rem;color:var(--gray)">${d.tarih}</div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:var(--orange)">${d.toplam.toFixed(1)}</div>
+        <button onclick="silDeneme(${gerçekI})" style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--gray)">🗑</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function silDeneme(i) {
+  const denemeler = DATA.get('denemeler') || [];
+  denemeler.splice(i, 1);
+  DATA.set('denemeler', denemeler);
+  loadDenemeListe();
+  grafCiz();
+  showToast('🗑 Silindi');
+}
+
+function grafDersSec(id) {
+  _grafDers = id;
+  document.querySelectorAll('#grafDersSecim .konu-tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  grafCiz();
+}
+
+function grafCiz() {
+  const canvas = document.getElementById('netGrafik');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const denemeler = DATA.get('denemeler') || [];
+  const ders = [...SOZEL_DERSLER,...SAYISAL_DERSLER].find(d=>d.id===_grafDers);
+  if (!ders || !denemeler.length) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+
+  const data = denemeler.slice(-10).map(d => ({ label: d.ad.substring(0,8), val: d.netler[_grafDers]||0 }));
+
+  canvas.width = canvas.offsetWidth || 400;
+  canvas.height = 200;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const pad = { t:20, r:10, b:40, l:35 };
+  const w = canvas.width - pad.l - pad.r;
+  const h = canvas.height - pad.t - pad.b;
+  const max = Math.max(...data.map(d=>d.val), 1);
+
+  // Grid
+  ctx.strokeStyle = '#f0e8dc';
+  ctx.lineWidth = 1;
+  for (let i=0;i<=4;i++) {
+    const y = pad.t + h - (i/4)*h;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+w,y); ctx.stroke();
+    ctx.fillStyle = '#9a7f65'; ctx.font = '10px Nunito'; ctx.textAlign = 'right';
+    ctx.fillText((max*i/4).toFixed(1), pad.l-4, y+4);
+  }
+
+  // Çizgi
+  ctx.beginPath();
+  ctx.strokeStyle = ders.renk;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  data.forEach((d,i) => {
+    const x = pad.l + (i/(data.length-1||1))*w;
+    const y = pad.t + h - (d.val/max)*h;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Noktalar
+  data.forEach((d,i) => {
+    const x = pad.l + (i/(data.length-1||1))*w;
+    const y = pad.t + h - (d.val/max)*h;
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.fillStyle = ders.renk; ctx.fill();
+    ctx.fillStyle = '#2d1a0e'; ctx.font = 'bold 10px Nunito'; ctx.textAlign = 'center';
+    ctx.fillText(d.val.toFixed(1), x, y-10);
+    ctx.fillStyle = '#9a7f65'; ctx.font = '9px Nunito';
+    ctx.fillText(d.label, x, pad.t+h+16);
+  });
+}
+
+// ======== KONU ========
+function loadKonu() {
+  konuSinifSec(_konuSinif);
+}
+
+function konuSinifSec(s) {
+  _konuSinif = s;
+  document.querySelectorAll('[id^="kbtn"]').forEach(b => b.classList.remove('active'));
+  document.getElementById('kbtn'+s)?.classList.add('active');
+
+  const dersler = Object.keys(KONULAR[s]||{});
+  if (!dersler.includes(_konuDers)) _konuDers = dersler[0];
+
+  const tabs = document.getElementById('konuDersTabs');
+  tabs.innerHTML = dersler.map(d =>
+    `<button class="konu-tab-btn${d===_konuDers?' active':''}" onclick="konuDersSec('${d}')">${d}</button>`
+  ).join('');
+
+  renderKonuListesi();
+}
+
+function konuDersSec(d) {
+  _konuDers = d;
+  document.querySelectorAll('.konu-tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderKonuListesi();
+}
+
+function renderKonuListesi() {
+  const konular = KONULAR[_konuSinif]?.[_konuDers] || [];
+  const el = document.getElementById('konuListesi');
+  let biten = 0;
+  let gercekKonu = 0;
+
+  el.innerHTML = konular.map((k,i) => {
+    if (k.startsWith('__B__')) {
+      return `<div class="konu-baslik">${k.slice(5)}</div>`;
+    }
+    gercekKonu++;
+    const done = DATA.get(`konu_${_konuSinif}_${_konuDers}_${i}`);
+    if (done) biten++;
+    return `
+      <div class="konu-item">
+        <div class="konu-check${done?' done':''}" onclick="toggleKonu(${i})">${done?'✓':''}</div>
+        <div class="konu-text${done?' done':''}">${k}</div>
+        <button class="konu-plan-btn" onclick="konuyuPlanaEkle(${i}, this)" title="Plana ekle">+ Plan</button>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('konuDersBaslik').textContent = `${_konuDers} — ${_konuSinif}. Sınıf`;
+  document.getElementById('konuIlerleme').textContent = `${biten}/${gercekKonu}`;
+  const pct = gercekKonu ? (biten/gercekKonu*100) : 0;
+  document.getElementById('konuProgressFill').style.width = pct+'%';
+}
+
+let _planModalIdx = null;
+let _planModalBtn = null;
+
+function konuyuPlanaEkle(i, btn) {
+  const konular = KONULAR[_konuSinif]?.[_konuDers] || [];
+  if (konular[i]?.startsWith('__B__')) return;
+  _planModalIdx = i;
+  _planModalBtn = btn;
+  const konuAdi = `${_konuDers}: ${konular[i]}`;
+  document.getElementById('planModalKonu').textContent = konuAdi;
+
+  const gunler = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+  const today = todayKey();
+
+  function buildWeek(offset) {
+    const weekKey = getWeekKey(offset);
+    const d = new Date(weekKey);
+    const end = new Date(weekKey); end.setDate(end.getDate()+6);
+    const fmt = dt => `${dt.getDate()} ${['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][dt.getMonth()]}`;
+    const label = offset === 0 ? `Bu Hafta (${fmt(d)} – ${fmt(end)})` : `Gelecek Hafta (${fmt(d)} – ${fmt(end)})`;
+
+    const grid = document.getElementById(`planWeek${offset===0?1:2}Days`);
+    document.getElementById(`planWeek${offset===0?1:2}Label`).textContent = label;
+    grid.innerHTML = '';
+
+    for (let j = 0; j < 7; j++) {
+      const dt = new Date(weekKey); dt.setDate(dt.getDate()+j);
+      const dKey = dt.toISOString().slice(0,10);
+      const wd = DATA.get('week_'+dKey) || { tasks: [] };
+      const zatenEklendi = (wd.tasks||[]).some(t => t.text === konuAdi);
+      const isPast = dKey < today;
+
+      const btn2 = document.createElement('button');
+      btn2.className = 'plan-day-btn' + (dKey === today ? ' today' : '') + (zatenEklendi ? ' has-task' : '') + (isPast ? ' disabled' : '');
+      btn2.innerHTML = `<div>${gunler[j]}</div><div>${dt.getDate()}</div>`;
+      if (!isPast) {
+        btn2.onclick = () => gunePlanaEkle(dKey, konuAdi, zatenEklendi);
+      }
+      grid.appendChild(btn2);
+    }
+  }
+
+  buildWeek(0);
+  buildWeek(1);
+
+  document.getElementById('planModalOverlay').classList.add('show');
+}
+
+function gunePlanaEkle(dKey, konuAdi, zatenEklendi) {
+  if (zatenEklendi) {
+    showToast('⚠️ Bu konu o günde zaten var!');
+    closePlanModal();
+    return;
+  }
+  const wd = DATA.get('week_'+dKey) || { tasks: [] };
+  if (!wd.tasks) wd.tasks = [];
+  const bosSlot = wd.tasks.findIndex(t => !t.text);
+  if (bosSlot >= 0) {
+    wd.tasks[bosSlot].text = konuAdi;
+  } else {
+    wd.tasks.push({ text: konuAdi, done: false });
+  }
+  DATA.set('week_'+dKey, wd);
+
+  if (_planModalBtn) {
+    const planKey = `plan_btn_${_konuSinif}_${_konuDers}_${_planModalIdx}`;
+    DATA.set(planKey, true);
+    _planModalBtn.textContent = '✓ Eklendi';
+    _planModalBtn.classList.add('eklendi');
+  }
+
+  closePlanModal();
+  showToast('📅 Plana eklendi!');
+}
+
+function closePlanModal(event) {
+  if (event && event.target !== document.getElementById('planModalOverlay')) return;
+  document.getElementById('planModalOverlay').classList.remove('show');
+  _planModalIdx = null;
+  _planModalBtn = null;
+}
+
+function toggleKonu(i) {
+  const konular = KONULAR[_konuSinif]?.[_konuDers] || [];
+  if (konular[i]?.startsWith('__B__')) return;
+  const key = `konu_${_konuSinif}_${_konuDers}_${i}`;
+  const done = DATA.get(key);
+  DATA.set(key, !done);
+  renderKonuListesi();
+  rozetKontrol();
+  if (!done) showToast('✅ Konu tamamlandı!');
+}
+
+// ======== ROZET ========
+function loadRozet() {
+  const grid = document.getElementById('rozetGrid');
+  let kazanilan = 0;
+  grid.innerHTML = ROZETLER.map(r => {
+    const earned = r.kontrol(DATA);
+    if (earned) kazanilan++;
+    return `
+      <div class="rozet-item">
+        <span class="rozet-icon${earned?' earned':''}">${r.icon}</span>
+        <div class="rozet-name">${r.ad}</div>
+      </div>
+    `;
+  }).join('');
+
+  const sonraki = ROZETLER.find(r => !r.kontrol(DATA));
+  document.getElementById('sonrakiRozet').textContent = sonraki
+    ? `${sonraki.icon} ${sonraki.ad}: ${sonraki.kosul}`
+    : '🎉 Tüm rozetleri kazandın!';
+}
+
+function rozetKontrol() {
+  ROZETLER.forEach(r => {
+    const key = 'rozet_'+r.id;
+    if (!DATA.get(key) && r.kontrol(DATA)) {
+      DATA.set(key, true);
+      showToast(`🏅 Yeni rozet: ${r.icon} ${r.ad}!`);
+    }
+  });
+}
+
+// ======== PROFİL ========
+function loadProfil() {
+  const p = DATA.get('profil') || {};
+  document.getElementById('profilAd').value = p.ad || '';
+  document.getElementById('profilHedef').value = p.hedef || '';
+  if (p.sinif) profilSinifSec(p.sinif);
+}
+
+let _seciliSinif = '8';
+function profilSinifSec(s) {
+  _seciliSinif = s;
+  document.querySelectorAll('[id^="pbtn"]').forEach(b => b.classList.remove('active'));
+  document.getElementById('pbtn'+s)?.classList.add('active');
+}
+
+function profilKaydet() {
+  DATA.set('profil', { ad: document.getElementById('profilAd').value, sinif: _seciliSinif, hedef: document.getElementById('profilHedef').value });
+  showToast('✅ Profil kaydedildi!');
+}
+
+// ======== UYKU TAKİBİ ========
+function uGun() { return new Date().toISOString().slice(0,10); }
+function uVeri() { return DATA.get('uyku') || {}; }
+
+function uDeg(d) {
+  _uSure = Math.min(24, Math.max(0, Math.round((_uSure+d)*2)/2));
+  document.getElementById('uSure').textContent = _uSure.toFixed(1);
+  uEmojiGuncelle(_uSure);
+}
+function uEmojiGuncelle(s) {
+  const e = document.getElementById('uEmoji');
+  if (!e) return;
+  e.textContent = s<5?'😩':s<7?'😪':s<8?'🙂':s<=9?'😊':'😴';
+}
+function uKaydet() {
+  const log = uVeri(); log[uGun()] = _uSure; DATA.set('uyku', log);
+  uGrafCiz(); uTavsiye(); uOzet();
+  document.getElementById('uSilBtn').style.display = 'inline-block';
+  showToast('😴 Uyku kaydedildi!');
+}
+function uSil() {
+  const log = uVeri(); delete log[uGun()]; DATA.set('uyku', log);
+  _uSure = 7.0; document.getElementById('uSure').textContent = '7.0';
+  document.getElementById('uEmoji').textContent = '😐';
+  document.getElementById('uTavsiye').style.display = 'none';
+  document.getElementById('uSilBtn').style.display = 'none';
+  uGrafCiz(); uOzet();
+}
+function uTavsiye() {
+  const el = document.getElementById('uTavsiye');
+  const s = _uSure;
+  let m = '';
+  if (s<5) m = '⚠️ Çok az uyudun! 5 saatten az uyku hafıza ve konsantrasyonu ciddi etkiler.';
+  else if (s<7) m = '💤 Biraz az uyudun. Ortaokul öğrencileri için ideal uyku süresi 8-9 saattir.';
+  else if (s<8) m = '😊 Fena değil! Ama ortaokul öğrencileri için 8-9 saat arası daha ideal.';
+  else if (s<=9) m = '✅ Harika! 8-9 saat ortaokul öğrencileri için en verimli uyku süresi.';
+  else m = '😴 Çok uzun uyudun. Düzenli bir uyku saati belirlemeyi dene.';
+  el.textContent = m; el.style.display = 'block';
+}
+function uGrafCiz() {
+  const container = document.getElementById('uGrafik');
+  if (!container) return;
+  const log = uVeri();
+  const gunler = [];
+  for (let i=6;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const k = d.toISOString().slice(0,10);
+    gunler.push({ k, g:['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'][d.getDay()], v:log[k]??null });
+  }
+  const MAXS = 12, BH = 55;
+  container.innerHTML = gunler.map(g => {
+    const varMi = g.v !== null;
+    const barH = varMi ? Math.max(3, Math.round(Math.min(g.v/MAXS,1)*BH)) : 0;
+    const renk = varMi ? (g.v>=8&&g.v<=9?'var(--green)':g.v>=6?'var(--orange)':'var(--red)') : '#e5ddd5';
+    const bugun = g.k === uGun();
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+      <div style="font-size:0.58rem;font-weight:700;color:${varMi?'var(--text)':'transparent'};margin-bottom:2px">${varMi?g.v.toFixed(1):''}</div>
+      <div style="width:100%;display:flex;align-items:flex-end;height:${BH}px">
+        <div style="width:100%;height:${barH}px;background:${renk};border-radius:4px 4px 2px 2px;${bugun?'box-shadow:0 0 0 2px var(--orange)':''}"></div>
+      </div>
+      <div style="font-size:0.58rem;font-weight:${bugun?'800':'600'};color:${bugun?'var(--orange)':'var(--gray)'};margin-top:3px">${g.g}</div>
+    </div>`;
+  }).join('');
+}
+function uOzet() {
+  const vals = Object.values(uVeri()).filter(v=>typeof v==='number');
+  const o=document.getElementById('uOrt'), mx=document.getElementById('uMax'), mn=document.getElementById('uMin');
+  if (!o) return;
+  if (!vals.length) { o.textContent='-'; mx.textContent='-'; mn.textContent='-'; return; }
+  const ort = vals.reduce((a,b)=>a+b,0)/vals.length;
+  o.textContent=ort.toFixed(1)+'s'; mx.textContent=Math.max(...vals).toFixed(1)+'s'; mn.textContent=Math.min(...vals).toFixed(1)+'s';
+}
+function uInit() {
+  const log = uVeri(); const bugun = uGun();
+  const silBtn = document.getElementById('uSilBtn');
+  if (log[bugun]!==undefined) {
+    _uSure=log[bugun];
+    const el=document.getElementById('uSure');
+    if(el) el.textContent=_uSure.toFixed(1);
+    uEmojiGuncelle(_uSure); uTavsiye();
+    if(silBtn) silBtn.style.display='inline-block';
+  } else { if(silBtn) silBtn.style.display='none'; }
+  uGrafCiz(); uOzet();
+}
+
+// ======== VERİ ========
+function veriDisa() {
+  const data = {};
+  Object.keys(localStorage).filter(k=>k.startsWith('po_')).forEach(k => { data[k.slice(3)] = localStorage.getItem(k); });
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `pusulam-ortaokul-${todayKey()}.json`; a.click();
+}
+function veriSifirla() {
+  if (!confirm('Tüm veriler silinecek. Emin misin?')) return;
+  Object.keys(localStorage).filter(k=>k.startsWith('po_')).forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+
+// ======== PWA MANIFEST ========
+(function() {
+  const manifest = {
+    name: 'Pusulam Ortaokul',
+    short_name: 'Pusulam',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#0c1a2e',
+    theme_color: '#0ea5e9',
+    icons: [{ src: 'https://raw.githubusercontent.com/turuncukocluk/ortaokul-pusulam/main/icon.png', sizes: '192x192', type: 'image/png' }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('pwaManifest').setAttribute('href', url);
+})();
+
+// ======== PWA KURULUM ========
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  setTimeout(showInstallBanner, 2500);
+});
+
+function showInstallBanner() {
+  if (!_deferredInstallPrompt || DATA.get('install_dismissed')) return;
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = 'position:fixed;bottom:70px;left:12px;right:12px;background:linear-gradient(135deg,#0c1a2e,#0a3060);color:white;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.3)';
+  banner.innerHTML = `
+    <div style="font-size:1.8rem">🧭</div>
+    <div style="flex:1">
+      <div style="font-weight:800;font-size:0.9rem">Pusulam Ortaokul'u Yükle</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);margin-top:2px">Ana ekrana ekle, internet olmadan çalışır</div>
+    </div>
+    <button onclick="installApp()" style="background:var(--orange);color:white;border:none;border-radius:10px;padding:8px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer">Yükle</button>
+    <button onclick="dismissInstall()" style="background:rgba(255,255,255,0.1);color:white;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:1rem">✕</button>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function installApp() {
+  if (!_deferredInstallPrompt) return;
+  _deferredInstallPrompt.prompt();
+  const { outcome } = await _deferredInstallPrompt.userChoice;
+  _deferredInstallPrompt = null;
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.remove();
+  if (outcome === 'accepted') showToast('🎉 Pusulam ana ekrana eklendi!');
+}
+
+function dismissInstall() {
+  DATA.set('install_dismissed', '1');
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.remove();
+}
+
+// ======== BAŞLANGIÇ ========
+function startApp() {
+  document.getElementById('splash').style.display = 'none';
+  loadHome();
+  rozetKontrol();
+}
+
+window.addEventListener('load', () => {
+  const p = DATA.get('profil');
+  if (p && p.ad) {
+    setTimeout(startApp, 1000);
+  } else {
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      showPage('profil');
+    }, 1500);
+  }
+});
+
+// Service Worker (PWA)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'pusulam-ortaokul-v1';
+const ASSETS = ['/'];
+self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+  `;
+  const swBlob = new Blob([swCode], {type:'text/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+</body>
+</html>
+ content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Pusulam Ortaokul">
 <link rel="manifest" id="pwaManifest">
