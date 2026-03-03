@@ -133,6 +133,7 @@
   .konu-tab-btn.active { border-color:var(--orange); background:var(--orange); color:white; }
   .konu-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
   .konu-item:last-child { border-bottom:none; }
+  @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
   .konu-baslik { padding:10px 0 4px; margin-top:6px; font-size:0.78rem; font-weight:900; color:var(--orange); text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--orange); margin-bottom:2px; }
   .konu-baslik:first-child { margin-top:0; }
   .konu-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border); background:white; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; transition:all 0.2s; }
@@ -1602,7 +1603,10 @@ function veriSifirla() {
     display: 'standalone',
     background_color: '#0c1a2e',
     theme_color: '#0ea5e9',
-    icons: [{ src: 'https://raw.githubusercontent.com/turuncukocluk/ortaokul-pusulam/main/icon.png', sizes: '192x192', type: 'image/png' }]
+    icons: [
+      { src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMGVhNWU5Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAzNjlhMSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHJ4PSI0MiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIFB1c3VsYSBkYWlyZXNpIC0tPgogIDxjaXJjbGUgY3g9Ijk2IiBjeT0iOTIiIHI9IjUyIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIG9wYWNpdHk9IjAuMyIvPgogIDxjaXJjbGUgY3g9Ijk2IiBjeT0iOTIiIHI9IjQ0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMiIvPgogIDwhLS0gUHVzdWxhIGlicmVzaSAtIGt1emV5IGvEsXJtxLF6xLEgLS0+CiAgPHBvbHlnb24gcG9pbnRzPSI5Niw0OCAxMDMsOTIgOTYsODYgODksOTIiIGZpbGw9IiNlZjQ0NDQiLz4KICA8IS0tIFB1c3VsYSBpYnJlc2kgLSBnw7xuZXkgYmV5YXogLS0+CiAgPHBvbHlnb24gcG9pbnRzPSI5NiwxMzYgMTAzLDkyIDk2LDk4IDg5LDkyIiBmaWxsPSJ3aGl0ZSIvPgogIDwhLS0gTWVya2V6IG5va3RhIC0tPgogIDxjaXJjbGUgY3g9Ijk2IiBjeT0iOTIiIHI9IjYiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBOIGhhcmZpIC0tPgogIDx0ZXh0IHg9Ijk2IiB5PSIzNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iMTQiIG9wYWNpdHk9IjAuOCI+TjwvdGV4dD4KICA8IS0tIFB1c3VsYW0geWF6xLFzxLEgLS0+CiAgPHRleHQgeD0iOTYiIHk9IjE2MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iMTgiPlB1c3VsYW08L3RleHQ+Cjwvc3ZnPg==', sizes: '192x192', type: 'image/svg+xml' },
+      { src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMGVhNWU5Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAzNjlhMSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHJ4PSI0MiIgZmlsbD0idXJsKCNiZykiLz4KICA8IS0tIFB1c3VsYSBkYWlyZXNpIC0tPgogIDxjaXJjbGUgY3g9Ijk2IiBjeT0iOTIiIHI9IjUyIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIG9wYWNpdHk9IjAuMyIvPgogIDxjaXJjbGUgY3g9Ijk2IiBjeT0iOTIiIHI9IjQ0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMiIvPgogIDwhLS0gUHVzdWxhIGlicmVzaSAtIGt1emV5IGvEsXJtxLF6xLEgLS0+CiAgPHBvbHlnb24gcG9pbnRzPSI5Niw0OCAxMDMsOTIgOTYsODYgODksOTIiIGZpbGw9IiNlZjQ0NDQiLz4KICA8IS0tIFB1c3VsYSBpYnJlc2kgLSBnw7xuZXkgYmV5YXogLS0+CiAgPHBvbHlnb24gcG9pbnRzPSI5NiwxMzYgMTAzLDkyIDk2LDk4IDg5LDkyIiBmaWxsPSJ3aGl0ZSIvPgogIDwhLS0gTWVya2V6IG5va3RhIC0tPgogIDxjaXJjbGUgY3g9Ijk2IiBjeT0iOTIiIHI9IjYiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBOIGhhcmZpIC0tPgogIDx0ZXh0IHg9Ijk2IiB5PSIzNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iMTQiIG9wYWNpdHk9IjAuOCI+TjwvdGV4dD4KICA8IS0tIFB1c3VsYW0geWF6xLFzxLEgLS0+CiAgPHRleHQgeD0iOTYiIHk9IjE2MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iMTgiPlB1c3VsYW08L3RleHQ+Cjwvc3ZnPg==', sizes: '512x512', type: 'image/svg+xml' }
+    ]
   };
   const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
@@ -1613,22 +1617,36 @@ function veriSifirla() {
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   _deferredInstallPrompt = e;
-  setTimeout(showInstallBanner, 2500);
+  // Uygulama zaten kuruluysa banner gösterme
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  setTimeout(showInstallBanner, 2000);
+});
+
+// Uygulama yüklendikten sonra banner gizle
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.remove();
+  _deferredInstallPrompt = null;
+  showToast('🎉 Pusulam ana ekrana eklendi!');
 });
 
 function showInstallBanner() {
-  if (!_deferredInstallPrompt || DATA.get('install_dismissed')) return;
+  if (!_deferredInstallPrompt) return;
+  if (DATA.get('install_dismissed')) return;
+  if (document.getElementById('installBanner')) return;
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+
   const banner = document.createElement('div');
   banner.id = 'installBanner';
-  banner.style.cssText = 'position:fixed;bottom:70px;left:12px;right:12px;background:linear-gradient(135deg,#0c1a2e,#0a3060);color:white;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.3)';
+  banner.style.cssText = 'position:fixed;bottom:70px;left:12px;right:12px;background:linear-gradient(135deg,#0c1a2e,#0a3060);color:white;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);animation:slideUp 0.3s ease';
   banner.innerHTML = `
     <div style="font-size:1.8rem">🧭</div>
     <div style="flex:1">
-      <div style="font-weight:800;font-size:0.9rem">Pusulam Ortaokul'u Yükle</div>
-      <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);margin-top:2px">Ana ekrana ekle, internet olmadan çalışır</div>
+      <div style="font-weight:800;font-size:0.9rem">Pusulam'ı Yükle</div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.65);margin-top:2px">Ana ekrana ekle, internet olmadan çalışır</div>
     </div>
-    <button onclick="installApp()" style="background:var(--orange);color:white;border:none;border-radius:10px;padding:8px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer">Yükle</button>
-    <button onclick="dismissInstall()" style="background:rgba(255,255,255,0.1);color:white;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:1rem">✕</button>
+    <button onclick="installApp()" style="background:var(--orange);color:white;border:none;border-radius:10px;padding:8px 16px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;white-space:nowrap">⬇️ Yükle</button>
+    <button onclick="dismissInstall()" style="background:rgba(255,255,255,0.12);color:white;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:1rem">✕</button>
   `;
   document.body.appendChild(banner);
 }
@@ -1640,7 +1658,6 @@ async function installApp() {
   _deferredInstallPrompt = null;
   const banner = document.getElementById('installBanner');
   if (banner) banner.remove();
-  if (outcome === 'accepted') showToast('🎉 Pusulam ana ekrana eklendi!');
 }
 
 function dismissInstall() {
